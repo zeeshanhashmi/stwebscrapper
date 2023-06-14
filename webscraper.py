@@ -49,14 +49,14 @@ def parseHtmlForTag(option):
                     href = tag.get('href')
                     if href[0] == '/':
                         href = site+href[1:]
-                        st.write(href)               
+                    st.write(href)               
                 elif tag.name == 'div' or tag.name == 'p':
                     st.write(tag.text)  
                 elif tag.name == 'img': 
                     src = tag.get('src')
                     if src[0] == '/':
                         src = site+src
-                        st.write(src) 
+                    st.write(tag.get('src'))                    
         except:
             '' 
 
@@ -104,7 +104,9 @@ with st.container():
             st.session_state['tags'] = fetchTags(site)
             placeholder.empty()
         if st.session_state['button'] == True:
-            st.session_state['selectedTag'] = st.selectbox('Select Tag',(st.session_state['tags']),index=0)  
+            selBox = st.empty()
+            opt = selBox.selectbox('Select Tag',(st.session_state['tags']),index=0)  
+            st.session_state['selectedTag'] = opt
     with rc:
         if not st.session_state['selectedTag'] == '':
             parseHtmlForTag(st.session_state['selectedTag'])
