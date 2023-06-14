@@ -2,6 +2,7 @@ import requests
 import streamlit as st
 from bs4 import BeautifulSoup
 from PIL import Image
+import random
 
 
 st.session_state['button'] = False if 'button' not in st.session_state else st.session_state['button']
@@ -60,6 +61,8 @@ def parseHtmlForTag(option):
             '' 
 
 def clearForm():
+    textBlk.empty()
+    site =textBlk.text_input('', '', placeholder='https://',key=random.randint(0,99999))
     st.session_state['button'] = False
     st.session_state['tags'] = []
     st.session_state['selectedTag']
@@ -72,6 +75,7 @@ st.set_page_config(page_title="Website Scrapper", page_icon=":globe_with_meridia
 load_css("styles/style.css")
 
 lcol, rcol = st.columns(2)
+
 with lcol:
     image = Image.open('images/logo.png')
     st.image(image,width=300)
@@ -83,7 +87,8 @@ with rcol:
 with st.container():
     lc, rc = st.columns(2)
     with lc:
-        site = st.text_input('', 'https://google.com', placeholder='https://')
+        textBlk = st.empty()
+        site = textBlk.text_input('', '', placeholder='https://')
         lc1, rc1 = st.columns([1,4])
         with lc1:
             button = st.button('Fetch Tags')  
