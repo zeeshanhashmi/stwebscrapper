@@ -3,6 +3,8 @@ import streamlit as st
 from bs4 import BeautifulSoup
 from PIL import Image
 import random
+import pandas as pd
+from pandas import option_context
 
 
 st.session_state['button'] = False if 'button' not in st.session_state else st.session_state['button']
@@ -26,7 +28,7 @@ def fetchTags(url):
     tags = []
     if len(url) > 0:
         tags.append('')
-        acceptTags = ['div','a','img','p']
+        acceptTags = ['div','a','img','p','meta']
         html = requests.get(url)
         soup = BeautifulSoup(html.content,'html.parser')
         st.session_state['soup'] = soup
@@ -35,30 +37,34 @@ def fetchTags(url):
                 tags.append(tag.name)
     return tags
 
-
+result = []
 def parseHtmlForTag(option):
      soup = st.session_state['soup']
      if not option == '':
-        try:
-            with placeholder:
-                #st.write('')
-                #st.write('')
-                st.subheader("Results")            
+        try:      
             for tag in soup.find_all(option):
                 if tag.name == 'a':
                     href = tag.get('href')
                     if href[0] == '/':
                         href = site+href[1:]
-                    st.write(href)               
+                    result.append(href)
+                    #st.write(href)               
                 elif tag.name == 'div' or tag.name == 'p':
-                    st.write(tag.text)  
+                    result.append(tag.text)
+                    #st.write(tag.text)  
                 elif tag.name == 'img': 
                     src = tag.get('src')
                     if src[0] == '/':
                         src = site+src
-                    st.write(tag.get('src'))                    
+                    result.append(tag.get('src'))   
+                elif tag.name == 'meta': 
+                    result.append(tag.get('content'))                      
+                                
         except:
-            '' 
+            ''
+        pd.set_option('display.max_colwidth', 400) 
+        with option_context('display.max_colwidth', 400):   
+            resBlock.write(pd.DataFrame(result, columns=['Result']))    
 
 def clearForm():
     textBlk.empty()
@@ -74,19 +80,21 @@ st.set_page_config(page_title="Website Scrapper", page_icon=":globe_with_meridia
 
 load_css("styles/style.css")
 
-lcol, rcol = st.columns(2)
 
-with lcol:
-    image = Image.open('images/logo.png')
-    st.image(image,width=300)
-    st.write("by Zeeshan Hashmi")
-    st.write("In the input are below, enter url and then click on the Fetch Button")
-    st.write("Once loaded select the tag you wish to fetch in the select box.")
-with rcol:
-    placeholder = st.empty()
+
 with st.container():
-    lc, rc = st.columns(2)
-    with lc:
+    lcol, rcol = st.columns(2)
+    with lcol:
+        image = Image.open('images/logo.png')
+        st.image(image,width=300)
+        st.write("by Zeeshan Hashmi")
+        st.write("In the input are below, enter url and then click on the Fetch Button")
+        st.write("Once loaded select the tag you wish to fetch in the select box.")
+    with rcol:
+        placeholder = st.empty()
+
+    #lc, rc = st.columns(2)
+    with lcol:
         textBlk = st.empty()
         site = textBlk.text_input('', '', placeholder='https://')
         lc1, rc1 = st.columns([1,4])
@@ -107,7 +115,8 @@ with st.container():
             selBox = st.empty()
             opt = selBox.selectbox('Select Tag',(st.session_state['tags']),index=0)  
             st.session_state['selectedTag'] = opt
-    with rc:
+    with rcol:
+        resBlock = st.empty()  
         if not st.session_state['selectedTag'] == '':
             parseHtmlForTag(st.session_state['selectedTag'])
            
